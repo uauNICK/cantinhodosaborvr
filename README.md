@@ -45,21 +45,6 @@ Este projeto foi construído utilizando tecnologias nativas da web (**HTML5**, *
 - **Tipografia:** Google Fonts (Outfit e Inter).
 
 ---
-
-## 💻 Como Rodar Localmente
-
-1. Faça o clone do repositório:
-   ```bash
-   git clone https://github.com/uauNICK/comercios-locais.git
-   ```
-2. Navegue até a pasta do projeto:
-   ```bash
-   cd comercios-locais
-   ```
-3. Abra o arquivo `index.html` em qualquer navegador (pode clicar duas vezes no arquivo no seu gerenciador de arquivos).
-
----
-
 ## ⚙️ Customização do Administrador
 
 Ao abrir a plataforma no navegador:
