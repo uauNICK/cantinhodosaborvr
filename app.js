@@ -10,7 +10,14 @@ const DEFAULT_DB = {
         mapsUrl: "https://maps.google.com",
         bannerUrl: "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&q=80&w=1200",
         featureUrl: "https://images.unsplash.com/photo-1621605815971-fbc98d665033?auto=format&fit=crop&q=80&w=600",
-        theme: "barber-dark"
+        theme: "barber-dark",
+        hoursWeekdayStart: "09:00",
+        hoursWeekdayEnd: "19:00",
+        hoursSaturdayStart: "08:00",
+        hoursSaturdayEnd: "17:00",
+        hoursSundayOpen: false,
+        hoursSundayStart: "09:00",
+        hoursSundayEnd: "13:00"
     },
     catalog: [
         {
@@ -192,6 +199,15 @@ class LocalBizApp {
     applyBranding() {
         const s = this.db.settings;
 
+        // Fallbacks for schedule settings if undefined (backward compatibility)
+        s.hoursWeekdayStart = s.hoursWeekdayStart || "09:00";
+        s.hoursWeekdayEnd = s.hoursWeekdayEnd || "19:00";
+        s.hoursSaturdayStart = s.hoursSaturdayStart || "08:00";
+        s.hoursSaturdayEnd = s.hoursSaturdayEnd || "17:00";
+        s.hoursSundayOpen = s.hoursSundayOpen !== undefined ? s.hoursSundayOpen : false;
+        s.hoursSundayStart = s.hoursSundayStart || "09:00";
+        s.hoursSundayEnd = s.hoursSundayEnd || "13:00";
+
         // Apply Theme Stylesheet Class
         document.body.className = `theme-${s.theme}`;
 
@@ -231,6 +247,14 @@ class LocalBizApp {
         if (this.socialFacebook) this.socialFacebook.href = `https://facebook.com`;
         if (this.btnGoogleMaps) this.btnGoogleMaps.href = s.mapsUrl;
 
+        // Footer schedule display
+        const displayW = document.getElementById("display-hours-weekday");
+        const displayS = document.getElementById("display-hours-sat");
+        const displaySu = document.getElementById("display-hours-sun");
+        if (displayW) displayW.textContent = `${s.hoursWeekdayStart} - ${s.hoursWeekdayEnd}`;
+        if (displayS) displayS.textContent = `${s.hoursSaturdayStart} - ${s.hoursSaturdayEnd}`;
+        if (displaySu) displaySu.textContent = s.hoursSundayOpen ? `${s.hoursSundayStart} - ${s.hoursSundayEnd}` : "Fechado";
+
         // Admin Customization Inputs Sync
         document.getElementById("settings-store-name").value = s.storeName;
         document.getElementById("settings-badge").value = s.badge;
@@ -243,6 +267,21 @@ class LocalBizApp {
         document.getElementById("settings-maps-url").value = s.mapsUrl;
         document.getElementById("settings-theme").value = s.theme;
 
+        // Admin schedule Inputs Sync
+        document.getElementById("settings-hours-weekday-start").value = s.hoursWeekdayStart;
+        document.getElementById("settings-hours-weekday-end").value = s.hoursWeekdayEnd;
+        document.getElementById("settings-hours-sat-start").value = s.hoursSaturdayStart;
+        document.getElementById("settings-hours-sat-end").value = s.hoursSaturdayEnd;
+        
+        const checkSun = document.getElementById("settings-hours-sun-open");
+        if (checkSun) {
+            checkSun.checked = s.hoursSundayOpen;
+            const sunRow = document.getElementById("settings-hours-sun-row");
+            if (sunRow) sunRow.style.display = s.hoursSundayOpen ? "grid" : "none";
+        }
+        document.getElementById("settings-hours-sun-start").value = s.hoursSundayStart;
+        document.getElementById("settings-hours-sun-end").value = s.hoursSundayEnd;
+
         // Select Theme Option visually
         document.querySelectorAll(".theme-option").forEach(opt => {
             if (opt.dataset.theme === s.theme) {
@@ -251,6 +290,76 @@ class LocalBizApp {
                 opt.classList.remove("selected");
             }
         });
+
+        // Update Store Open/Closed indicator on storefront
+        this.updateStoreStatus();
+    }
+
+    updateStoreStatus() {
+        const s = this.db.settings;
+        const now = new Date();
+        
+        // Get day of week (0 = Sunday, 1 = Monday, ..., 6 = Saturday)
+        const day = now.getDay();
+        
+        // Get current time in minutes since midnight
+        const currentHour = now.getHours();
+        const currentMin = now.getMinutes();
+        const currentTotalMin = currentHour * 60 + currentMin;
+        
+        let isOpen = false;
+        
+        const parseTimeToMinutes = (timeStr) => {
+            if (!timeStr) return 0;
+            const parts = timeStr.split(":");
+            return parseInt(parts[0]) * 60 + parseInt(parts[1]);
+        };
+        
+        if (day >= 1 && day <= 5) {
+            // Weekday (Mon-Fri)
+            const startMin = parseTimeToMinutes(s.hoursWeekdayStart);
+            const endMin = parseTimeToMinutes(s.hoursWeekdayEnd);
+            isOpen = currentTotalMin >= startMin && currentTotalMin < endMin;
+        } else if (day === 6) {
+            // Saturday
+            const startMin = parseTimeToMinutes(s.hoursSaturdayStart);
+            const endMin = parseTimeToMinutes(s.hoursSaturdayEnd);
+            isOpen = currentTotalMin >= startMin && currentTotalMin < endMin;
+        } else if (day === 0) {
+            // Sunday
+            if (s.hoursSundayOpen) {
+                const startMin = parseTimeToMinutes(s.hoursSundayStart);
+                const endMin = parseTimeToMinutes(s.hoursSundayEnd);
+                isOpen = currentTotalMin >= startMin && currentTotalMin < endMin;
+            } else {
+                isOpen = false;
+            }
+        }
+        
+        const badge = document.getElementById("store-status-badge");
+        if (badge) {
+            if (isOpen) {
+                const closingHour = day === 0 ? s.hoursSundayEnd : day === 6 ? s.hoursSaturdayEnd : s.hoursWeekdayEnd;
+                badge.innerHTML = `<i class="fa-solid fa-circle" style="font-size: 0.65rem; color: #22c55e; margin-right: 6px;"></i> Aberto (Fecha às ${closingHour})`;
+                badge.style.backgroundColor = "rgba(34, 197, 94, 0.15)";
+                badge.style.color = "#22c55e";
+                badge.style.borderColor = "rgba(34, 197, 94, 0.3)";
+            } else {
+                let nextDayText = "Abre amanhã às ";
+                if (day === 6 && !s.hoursSundayOpen) {
+                    nextDayText = "Abre segunda às " + s.hoursWeekdayStart;
+                } else if (day === 0) {
+                    nextDayText = "Abre segunda às " + s.hoursWeekdayStart;
+                } else {
+                    nextDayText = "Abre amanhã às " + (day === 5 ? s.hoursSaturdayStart : s.hoursWeekdayStart);
+                }
+                
+                badge.innerHTML = `<i class="fa-solid fa-circle" style="font-size: 0.65rem; color: #ef4444; margin-right: 6px;"></i> Fechado (${nextDayText})`;
+                badge.style.backgroundColor = "rgba(239, 68, 68, 0.15)";
+                badge.style.color = "#ef4444";
+                badge.style.borderColor = "rgba(239, 68, 68, 0.3)";
+            }
+        }
     }
 
     renderCatalog() {
@@ -512,6 +621,15 @@ class LocalBizApp {
         if (this.formCatalogItem) {
             this.formCatalogItem.addEventListener("submit", (e) => this.handleCatalogFormSubmit(e));
         }
+
+        // Sunday Hours Toggle
+        const checkSunOpen = document.getElementById("settings-hours-sun-open");
+        const sunRow = document.getElementById("settings-hours-sun-row");
+        if (checkSunOpen && sunRow) {
+            checkSunOpen.addEventListener("change", () => {
+                sunRow.style.display = checkSunOpen.checked ? "grid" : "none";
+            });
+        }
     }
 
     // Modal Control Utils
@@ -730,6 +848,15 @@ class LocalBizApp {
         this.db.settings.address = document.getElementById("settings-address").value.trim();
         this.db.settings.mapsUrl = document.getElementById("settings-maps-url").value.trim();
         this.db.settings.theme = document.getElementById("settings-theme").value;
+
+        // Schedule inputs
+        this.db.settings.hoursWeekdayStart = document.getElementById("settings-hours-weekday-start").value;
+        this.db.settings.hoursWeekdayEnd = document.getElementById("settings-hours-weekday-end").value;
+        this.db.settings.hoursSaturdayStart = document.getElementById("settings-hours-sat-start").value;
+        this.db.settings.hoursSaturdayEnd = document.getElementById("settings-hours-sat-end").value;
+        this.db.settings.hoursSundayOpen = document.getElementById("settings-hours-sun-open").checked;
+        this.db.settings.hoursSundayStart = document.getElementById("settings-hours-sun-start").value;
+        this.db.settings.hoursSundayEnd = document.getElementById("settings-hours-sun-end").value;
 
         this.saveDatabase();
         this.applyBranding();

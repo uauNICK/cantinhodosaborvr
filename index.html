@@ -33,7 +33,10 @@
         <div class="hero-gradient-overlay"></div>
         <div class="hero-container">
             <div class="hero-content">
-                <span class="badge" id="hero-badge">Atendimento & Qualidade</span>
+                <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 16px; flex-wrap: wrap;">
+                    <span class="badge" id="hero-badge">Atendimento & Qualidade</span>
+                    <span class="badge" id="store-status-badge">Carregando status...</span>
+                </div>
                 <h1 class="hero-title" id="hero-title">Estilo e Elegância para o seu <span>Visual</span></h1>
                 <p class="hero-description" id="hero-desc">O melhor atendimento da região com profissionais qualificados, produtos premium e um espaço pensado para o seu bem-estar.</p>
                 <div class="hero-actions">
@@ -90,9 +93,9 @@
             <div class="glass-card">
                 <h4 style="font-size: 1.2rem; margin-bottom: 20px;"><i class="fa-regular fa-clock" style="color: var(--accent-color); margin-right: 8px;"></i> Horário de Funcionamento</h4>
                 <ul class="opening-hours">
-                    <li>Segunda - Sexta <strong>09:00 - 19:00</strong></li>
-                    <li>Sábado <strong>08:00 - 17:00</strong></li>
-                    <li>Domingo <strong>Fechado</strong></li>
+                    <li>Segunda - Sexta <strong id="display-hours-weekday">09:00 - 19:00</strong></li>
+                    <li>Sábado <strong id="display-hours-sat">08:00 - 17:00</strong></li>
+                    <li>Domingo <strong id="display-hours-sun">Fechado</strong></li>
                 </ul>
             </div>
 
@@ -301,6 +304,47 @@
                             <div class="form-group">
                                 <label class="form-label" for="settings-maps-url">Link do Google Maps (Como Chegar)</label>
                                 <input type="url" id="settings-maps-url" class="form-control" placeholder="https://maps.google.com/..." required>
+                            </div>
+                        </div>
+
+                        <!-- Card de Horário de Funcionamento -->
+                        <div class="glass-card">
+                            <h3 style="margin-bottom: 20px; font-size: 1.15rem;"><i class="fa-regular fa-clock" style="color: var(--accent-color); margin-right: 8px;"></i> Horário de Funcionamento</h3>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label class="form-label" for="settings-hours-weekday-start">Segunda a Sexta (Abertura)</label>
+                                    <input type="time" id="settings-hours-weekday-start" class="form-control" required>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" for="settings-hours-weekday-end">Segunda a Sexta (Fechamento)</label>
+                                    <input type="time" id="settings-hours-weekday-end" class="form-control" required>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label class="form-label" for="settings-hours-sat-start">Sábado (Abertura)</label>
+                                    <input type="time" id="settings-hours-sat-start" class="form-control" required>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" for="settings-hours-sat-end">Sábado (Fechamento)</label>
+                                    <input type="time" id="settings-hours-sat-end" class="form-control" required>
+                                </div>
+                            </div>
+                            <div class="form-group" style="margin-bottom: 10px;">
+                                <label class="form-label" style="display: flex; align-items: center; gap: 8px; cursor: pointer; text-transform: none; letter-spacing: 0;">
+                                    <input type="checkbox" id="settings-hours-sun-open" style="width: 16px; height: 16px; accent-color: var(--accent-color);">
+                                    <span>Aberto aos Domingos</span>
+                                </label>
+                            </div>
+                            <div class="form-row" id="settings-hours-sun-row" style="display: none;">
+                                <div class="form-group">
+                                    <label class="form-label" for="settings-hours-sun-start">Domingo (Abertura)</label>
+                                    <input type="time" id="settings-hours-sun-start" class="form-control">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" for="settings-hours-sun-end">Domingo (Fechamento)</label>
+                                    <input type="time" id="settings-hours-sun-end" class="form-control">
+                                </div>
                             </div>
                         </div>
                     </div>
