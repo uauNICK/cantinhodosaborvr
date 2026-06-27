@@ -175,6 +175,7 @@ class LocalBizApp {
         this.adminDashboard = document.getElementById("admin-dashboard");
         this.btnAdminOpen = document.getElementById("btn-admin-open");
         this.btnAdminLogout = document.getElementById("btn-admin-logout");
+        this.btnAdminBack = document.getElementById("btn-admin-back");
         
         // Catalog Form bindings
         this.modalCatalogForm = document.getElementById("modal-catalog-form");
@@ -460,6 +461,13 @@ class LocalBizApp {
 
         if (this.btnAdminLogout) {
             this.btnAdminLogout.addEventListener("click", () => this.handleAdminLogout());
+        }
+
+        if (this.btnAdminBack) {
+            this.btnAdminBack.addEventListener("click", () => {
+                this.adminDashboard.classList.remove("active");
+                this.checkAdminSession();
+            });
         }
 
         // Admin Tab switching
