@@ -112,12 +112,14 @@ const firebaseConfig = {
 const isFirebaseConfigured = firebaseConfig.apiKey && firebaseConfig.apiKey !== "";
 let db = null;
 let auth = null;
+let storage = null;
 
 if (isFirebaseConfigured) {
     try {
         firebase.initializeApp(firebaseConfig);
         db = firebase.firestore();
         auth = firebase.auth();
+        storage = firebase.storage();
         console.log("Firebase inicializado com sucesso!");
     } catch (err) {
         console.error("Falha ao inicializar o Firebase. Fallback para LocalStorage ativo.", err);
@@ -280,6 +282,7 @@ class LocalBizApp {
         this.catalogFormTitle = document.getElementById("catalog-form-title");
         this.btnCatalogAdd = document.getElementById("btn-catalog-add");
         this.catalogItemId = document.getElementById("catalog-item-id");
+        this.catalogItemImageFile = document.getElementById("catalog-item-image-file");
 
         // Setup Copyright Year
         if (this.yearCopy) this.yearCopy.textContent = new Date().getFullYear();
@@ -1022,6 +1025,7 @@ class LocalBizApp {
     // Catalog Administration Form logic
     openCatalogFormModal(itemId = null) {
         this.formCatalogItem.reset();
+        if (this.catalogItemImageFile) this.catalogItemImageFile.value = "";
         
         if (itemId) {
             const item = this.db.catalog.find(i => i.id === itemId);
@@ -1051,15 +1055,34 @@ class LocalBizApp {
         const type = document.getElementById("catalog-item-type").value;
         const price = parseFloat(document.getElementById("catalog-item-price").value);
         const category = document.getElementById("catalog-item-category").value.trim();
-        const image = document.getElementById("catalog-item-image").value.trim();
+        let imageUrl = document.getElementById("catalog-item-image").value.trim();
         const description = document.getElementById("catalog-item-description").value.trim();
 
+        const file = this.catalogItemImageFile && this.catalogItemImageFile.files[0];
+
         try {
+            if (file) {
+                this.showToast("Fazendo upload da imagem...");
+                if (isFirebaseConfigured) {
+                    const fileExtension = file.name.split('.').pop();
+                    const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 8)}.${fileExtension}`;
+                    const storageRef = storage.ref().child(`catalog/images/${fileName}`);
+                    const uploadTask = await storageRef.put(file);
+                    imageUrl = await uploadTask.ref.getDownloadURL();
+                } else {
+                    imageUrl = await this.convertFileToBase64(file);
+                }
+            }
+
+            if (!imageUrl) {
+                imageUrl = "https://images.unsplash.com/photo-1594122230689-45899d9e6f69?auto=format&fit=crop&q=80&w=400";
+            }
+
             if (id) {
                 // Edit mode
                 const index = this.db.catalog.findIndex(i => i.id === id);
                 if (index !== -1) {
-                    const updatedItem = { id, name, type, price, category, image, description };
+                    const updatedItem = { id, name, type, price, category, image: imageUrl, description };
                     this.db.catalog[index] = updatedItem;
                     
                     if (isFirebaseConfigured) {
@@ -1073,7 +1096,7 @@ class LocalBizApp {
                 const newId = "c_" + Date.now();
                 const newItem = {
                     id: newId,
-                    name, type, price, category, image, description
+                    name, type, price, category, image: imageUrl, description
                 };
                 
                 if (isFirebaseConfigured) {
@@ -1193,6 +1216,15 @@ class LocalBizApp {
             return `(${num.substring(0, 2)}) ${num.substring(2, 6)}-${num.substring(6)}`;
         }
         return phoneStr;
+    }
+
+    convertFileToBase64(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = (error) => reject(error);
+            reader.readAsDataURL(file);
+        });
     }
 }
 

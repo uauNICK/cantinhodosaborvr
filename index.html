@@ -12,6 +12,7 @@
     <!-- Firebase SDK Compat (Nativo e Estático) -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
 </head>
 <body class="theme-barber-dark">
@@ -477,9 +478,15 @@
                     </div>
                 </div>
 
-                <div class="form-group">
-                    <label class="form-label" for="catalog-item-image">URL da Imagem</label>
-                    <input type="url" id="catalog-item-image" class="form-control" placeholder="https://images.unsplash.com/..." required>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label" for="catalog-item-image-file">Enviar Foto (Anexar Arquivo)</label>
+                        <input type="file" id="catalog-item-image-file" class="form-control" accept="image/*">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="catalog-item-image">Ou link externo (URL)</label>
+                        <input type="url" id="catalog-item-image" class="form-control" placeholder="https://images.unsplash.com/...">
+                    </div>
                 </div>
 
                 <div class="form-group">
