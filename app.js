@@ -150,6 +150,9 @@ class LocalBizApp {
             this.renderCatalog();
             this.checkAdminSession();
 
+            // Exibe o aviso de entrega na primeira abertura do site
+            this.openModal("modal-delivery-welcome");
+
             // Ajusta instruções de login baseadas na configuração ativa
             const helperText = document.getElementById("login-helper-text");
             if (helperText) {
@@ -758,6 +761,32 @@ class LocalBizApp {
         if (btnAddCat) {
             btnAddCat.addEventListener("click", () => this.addCategory());
         }
+
+        // Delivery Popups Triggers
+        const btnCloseWelcome = document.getElementById("btn-delivery-welcome-close");
+        if (btnCloseWelcome) {
+            btnCloseWelcome.addEventListener("click", () => {
+                this.closeModal("modal-delivery-welcome");
+            });
+        }
+
+        const btnCancelCheckout = document.getElementById("btn-delivery-checkout-cancel");
+        if (btnCancelCheckout) {
+            btnCancelCheckout.addEventListener("click", () => {
+                this.closeModal("modal-delivery-checkout");
+            });
+        }
+
+        const btnConfirmCheckout = document.getElementById("btn-delivery-checkout-confirm");
+        if (btnConfirmCheckout) {
+            btnConfirmCheckout.addEventListener("click", () => {
+                this.closeModal("modal-delivery-checkout");
+                if (this.pendingWaUrl) {
+                    window.open(this.pendingWaUrl, "_blank");
+                    this.pendingWaUrl = null;
+                }
+            });
+        }
     }
 
     // Modal Control Utils
@@ -870,7 +899,8 @@ class LocalBizApp {
             const waUrl = `https://api.whatsapp.com/send?phone=${this.db.settings.phone}&text=${encodeURIComponent(message)}`;
             
             setTimeout(() => {
-                window.open(waUrl, "_blank");
+                this.pendingWaUrl = waUrl;
+                this.openModal("modal-delivery-checkout");
             }, 800);
         } catch (err) {
             console.error("Failed to save booking", err);
@@ -941,7 +971,8 @@ class LocalBizApp {
             const waUrl = `https://api.whatsapp.com/send?phone=${this.db.settings.phone}&text=${encodeURIComponent(message)}`;
             
             setTimeout(() => {
-                window.open(waUrl, "_blank");
+                this.pendingWaUrl = waUrl;
+                this.openModal("modal-delivery-checkout");
             }, 800);
         } catch (err) {
             console.error("Failed to save reservation", err);

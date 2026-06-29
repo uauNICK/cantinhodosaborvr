@@ -523,6 +523,37 @@
         </div>
     </div>
 
+    <!-- MODAL: Welcome Delivery Alert -->
+    <div class="modal-overlay" id="modal-delivery-welcome">
+        <div class="modal-content glass-card" style="max-width: 440px; text-align: center; padding: 30px;">
+            <div style="font-size: 3rem; color: var(--accent-color); margin-bottom: 20px;">
+                <i class="fa-solid fa-truck-ramp-box"></i>
+            </div>
+            <h3 class="modal-title" style="margin-bottom: 12px; font-size: 1.4rem;">Possibilidade de Entrega!</h3>
+            <p style="color: var(--text-secondary); margin-bottom: 24px; font-size: 0.95rem; line-height: 1.5;">
+                Olá! Antes de prosseguir com suas escolhas, por favor verifique conosco a disponibilidade de entrega para o seu bairro ou se prefere retirar o pedido diretamente no local.
+            </p>
+            <button class="btn-primary" id="btn-delivery-welcome-close" style="width: 100%; justify-content: center;"><i class="fa-solid fa-circle-check"></i> Entendi, obrigado!</button>
+        </div>
+    </div>
+
+    <!-- MODAL: Checkout Delivery Reminder -->
+    <div class="modal-overlay" id="modal-delivery-checkout">
+        <div class="modal-content glass-card" style="max-width: 440px; text-align: center; padding: 30px;">
+            <div style="font-size: 3.5rem; color: #f59e0b; margin-bottom: 20px;">
+                <i class="fa-solid fa-circle-exclamation"></i>
+            </div>
+            <h3 class="modal-title" style="margin-bottom: 12px; font-size: 1.4rem;">Confirmar Entrega</h3>
+            <p style="color: var(--text-secondary); margin-bottom: 24px; font-size: 0.95rem; line-height: 1.5;">
+                Você confirmou a possibilidade e taxa de entrega para o seu endereço? Caso não tenha certeza, verifique com a nossa equipe.
+            </p>
+            <div style="display: flex; gap: 12px;">
+                <button class="btn-secondary" id="btn-delivery-checkout-cancel" style="flex: 1; justify-content: center; height: 46px; font-size: 0.9rem;">Voltar</button>
+                <button class="btn-primary" id="btn-delivery-checkout-confirm" style="flex: 1; justify-content: center; height: 46px; font-size: 0.9rem;"><i class="fa-brands fa-whatsapp"></i> Ir p/ WhatsApp</button>
+            </div>
+        </div>
+    </div>
+
     <!-- TOAST CONTAINER -->
     <div class="toast-container" id="toast-container"></div>
 
