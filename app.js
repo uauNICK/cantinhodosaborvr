@@ -112,14 +112,12 @@ const firebaseConfig = {
 const isFirebaseConfigured = firebaseConfig.apiKey && firebaseConfig.apiKey !== "";
 let db = null;
 let auth = null;
-let storage = null;
 
 if (isFirebaseConfigured) {
     try {
         firebase.initializeApp(firebaseConfig);
         db = firebase.firestore();
         auth = firebase.auth();
-        storage = firebase.storage();
         console.log("Firebase inicializado com sucesso!");
     } catch (err) {
         console.error("Falha ao inicializar o Firebase. Fallback para LocalStorage ativo.", err);
@@ -1062,16 +1060,8 @@ class LocalBizApp {
 
         try {
             if (file) {
-                this.showToast("Fazendo upload da imagem...");
-                if (isFirebaseConfigured) {
-                    const fileExtension = file.name.split('.').pop();
-                    const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 8)}.${fileExtension}`;
-                    const storageRef = storage.ref().child(`catalog/images/${fileName}`);
-                    const uploadTask = await storageRef.put(file);
-                    imageUrl = await uploadTask.ref.getDownloadURL();
-                } else {
-                    imageUrl = await this.convertFileToBase64(file);
-                }
+                this.showToast("Otimizando imagem...");
+                imageUrl = await this.compressImage(file);
             }
 
             if (!imageUrl) {
@@ -1218,12 +1208,41 @@ class LocalBizApp {
         return phoneStr;
     }
 
-    convertFileToBase64(file) {
+    compressImage(file, maxWidth = 600, maxHeight = 600, quality = 0.7) {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
-            reader.onload = () => resolve(reader.result);
-            reader.onerror = (error) => reject(error);
             reader.readAsDataURL(file);
+            reader.onload = (event) => {
+                const img = new Image();
+                img.src = event.target.result;
+                img.onload = () => {
+                    const canvas = document.createElement("canvas");
+                    let width = img.width;
+                    let height = img.height;
+
+                    if (width > height) {
+                        if (width > maxWidth) {
+                            height = Math.round((height * maxWidth) / width);
+                            width = maxWidth;
+                        }
+                    } else {
+                        if (height > maxHeight) {
+                            width = Math.round((width * maxHeight) / height);
+                            height = maxHeight;
+                        }
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext("2d");
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    const dataUrl = canvas.toDataURL("image/jpeg", quality);
+                    resolve(dataUrl);
+                };
+                img.onerror = (err) => reject(err);
+            };
+            reader.onerror = (err) => reject(err);
         });
     }
 }
