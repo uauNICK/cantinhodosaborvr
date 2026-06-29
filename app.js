@@ -334,7 +334,15 @@ class LocalBizApp {
         }
 
         // Hero Content
-        if (this.heroBannerImage) this.heroBannerImage.style.backgroundImage = `url('${s.bannerUrl}')`;
+        if (this.heroBannerImage) {
+            if (this.isVideo(s.bannerUrl)) {
+                this.heroBannerImage.style.backgroundImage = "none";
+                this.heroBannerImage.innerHTML = `<video src="${s.bannerUrl}" autoplay loop muted playsinline style="width: 100%; height: 100%; object-fit: cover; position: absolute; top:0; left:0;"></video>`;
+            } else {
+                this.heroBannerImage.innerHTML = "";
+                this.heroBannerImage.style.backgroundImage = `url('${s.bannerUrl}')`;
+            }
+        }
         if (this.heroBadge) this.heroBadge.textContent = s.badge;
         
         // Highlight logic for the last word of title
@@ -345,7 +353,20 @@ class LocalBizApp {
             this.heroTitle.innerHTML = `${startPhrase}<span>${lastWord}</span>`;
         }
         if (this.heroDesc) this.heroDesc.textContent = s.storeDesc;
-        if (this.heroFeatureImage) this.heroFeatureImage.src = s.featureUrl;
+        
+        if (this.heroFeatureImage) {
+            const wrapper = document.querySelector(".hero-image-wrapper");
+            if (wrapper) {
+                if (this.isVideo(s.featureUrl)) {
+                    wrapper.innerHTML = `<video src="${s.featureUrl}" autoplay loop muted playsinline class="hero-main-image" id="hero-feature-image"></video>`;
+                } else {
+                    wrapper.innerHTML = `<img src="${s.featureUrl}" alt="Destaque" class="hero-main-image" id="hero-feature-image" onerror="this.src='https://images.unsplash.com/photo-1582201942988-13e60e4556ee?auto=format&fit=crop&q=80&w=600'">`;
+                }
+                this.heroFeatureImage = document.getElementById("hero-feature-image");
+            } else {
+                this.heroFeatureImage.src = s.featureUrl;
+            }
+        }
 
         // Footer Content
         if (this.footerStoreName) this.footerStoreName.textContent = s.storeName;
@@ -517,7 +538,10 @@ class LocalBizApp {
 
             card.innerHTML = `
                 <div class="card-img-wrapper">
-                    <img src="${item.image}" alt="${item.name}" class="card-img" onerror="this.src='https://images.unsplash.com/photo-1594122230689-45899d9e6f69?auto=format&fit=crop&q=80&w=400'">
+                    ${this.isVideo(item.image) 
+                        ? `<video src="${item.image}" autoplay loop muted playsinline class="card-img" style="object-fit: cover; width: 100%; height: 100%;"></video>` 
+                        : `<img src="${item.image}" alt="${item.name}" class="card-img" onerror="this.src='https://images.unsplash.com/photo-1594122230689-45899d9e6f69?auto=format&fit=crop&q=80&w=400'">`
+                    }
                     <span class="badge" style="position: absolute; top: 12px; left: 12px; z-index: 5;">${item.category}</span>
                 </div>
                 <div class="card-body">
@@ -560,7 +584,10 @@ class LocalBizApp {
                     <button class="admin-card-btn delete" data-id="${item.id}" title="Excluir"><i class="fa-solid fa-trash-can"></i></button>
                 </div>
                 <div class="card-img-wrapper" style="height: 140px;">
-                    <img src="${item.image}" alt="${item.name}" class="card-img" onerror="this.src='https://images.unsplash.com/photo-1594122230689-45899d9e6f69?auto=format&fit=crop&q=80&w=400'">
+                    ${this.isVideo(item.image) 
+                        ? `<video src="${item.image}" autoplay loop muted playsinline class="card-img" style="object-fit: cover; width: 100%; height: 100%;"></video>` 
+                        : `<img src="${item.image}" alt="${item.name}" class="card-img" onerror="this.src='https://images.unsplash.com/photo-1594122230689-45899d9e6f69?auto=format&fit=crop&q=80&w=400'">`
+                    }
                     <span class="badge" style="position: absolute; top: 8px; left: 8px;">${item.category}</span>
                 </div>
                 <div class="card-body" style="padding: 16px;">
@@ -913,10 +940,17 @@ class LocalBizApp {
         if (!product) return;
 
         this.reserveProductId.value = product.id;
-        this.reserveProductImg.src = product.image;
-        this.reserveProductImg.onerror = () => { this.reserveProductImg.src = "https://images.unsplash.com/photo-1594122230689-45899d9e6f69?auto=format&fit=crop&q=80&w=400" };
         this.reserveProductName.textContent = product.name;
         this.reserveProductPrice.textContent = `R$ ${this.formatPrice(product.price)}`;
+
+        const mediaContainer = document.getElementById("reserve-product-media-container");
+        if (mediaContainer) {
+            if (this.isVideo(product.image)) {
+                mediaContainer.innerHTML = `<video src="${product.image}" autoplay loop muted playsinline style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;"></video>`;
+            } else {
+                mediaContainer.innerHTML = `<img src="${product.image}" alt="${product.name}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;" onerror="this.src='https://images.unsplash.com/photo-1594122230689-45899d9e6f69?auto=format&fit=crop&q=80&w=400'">`;
+            }
+        }
         
         document.getElementById("reserve-qty").value = "1";
 
@@ -1078,15 +1112,15 @@ class LocalBizApp {
 
         try {
             if (bannerFile) {
-                this.showToast("Otimizando imagem do banner...");
-                this.db.settings.bannerUrl = await this.compressImage(bannerFile);
+                this.showToast("Processando mídia do banner...");
+                this.db.settings.bannerUrl = await this.processUploadFile(bannerFile);
             } else {
                 this.db.settings.bannerUrl = document.getElementById("settings-banner-url").value.trim();
             }
 
             if (featureFile) {
-                this.showToast("Otimizando imagem de destaque...");
-                this.db.settings.featureUrl = await this.compressImage(featureFile);
+                this.showToast("Processando mídia de destaque...");
+                this.db.settings.featureUrl = await this.processUploadFile(featureFile);
             } else {
                 this.db.settings.featureUrl = document.getElementById("settings-feature-url").value.trim();
             }
@@ -1166,8 +1200,8 @@ class LocalBizApp {
 
         try {
             if (file) {
-                this.showToast("Otimizando imagem...");
-                imageUrl = await this.compressImage(file);
+                this.showToast("Processando arquivo de mídia...");
+                imageUrl = await this.processUploadFile(file);
             }
 
             if (!imageUrl) {
@@ -1314,8 +1348,47 @@ class LocalBizApp {
         return phoneStr;
     }
 
-    compressImage(file, maxWidth = 600, maxHeight = 600, quality = 0.7) {
+    isVideo(url) {
+        if (!url) return false;
+        return url.startsWith("data:video/") || 
+               url.endsWith(".mp4") || 
+               url.endsWith(".webm") || 
+               url.endsWith(".mov") || 
+               url.includes(".mp4?") || 
+               url.includes(".webm?") || 
+               url.includes(".mov?");
+    }
+
+    processUploadFile(file, maxWidth = 600, maxHeight = 600, quality = 0.7) {
         return new Promise((resolve, reject) => {
+            const isVideo = file.type.startsWith("video/");
+            const isGif = file.type === "image/gif";
+
+            if (isVideo) {
+                // Video limit size check: 900KB
+                if (file.size > 900 * 1024) {
+                    return reject(new Error("Vídeos locais devem ter menos de 900KB. Para vídeos maiores, use link de URL externo no campo abaixo."));
+                }
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = (event) => resolve(event.target.result);
+                reader.onerror = () => reject(new Error("Erro ao ler o arquivo de vídeo do dispositivo."));
+                return;
+            }
+
+            if (isGif) {
+                // GIF limit size check: 800KB
+                if (file.size > 800 * 1024) {
+                    return reject(new Error("GIFs locais devem ter menos de 800KB. Para GIFs maiores, use link de URL externo no campo abaixo."));
+                }
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = (event) => resolve(event.target.result);
+                reader.onerror = () => reject(new Error("Erro ao ler o arquivo de imagem GIF."));
+                return;
+            }
+
+            // Normal image resizing/compression (JPG/PNG/WEBP)
             const reader = new FileReader();
             reader.readAsDataURL(file);
             reader.onload = (event) => {

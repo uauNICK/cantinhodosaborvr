@@ -174,7 +174,9 @@
             </div>
             
             <div class="selected-product-box">
-                <img src="" alt="" class="selected-product-img" id="reserve-product-img">
+                <div id="reserve-product-media-container" style="width: 70px; height: 70px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; border-radius: 8px;">
+                    <img src="" alt="" class="selected-product-img" id="reserve-product-img" style="width: 100%; height: 100%; object-fit: cover;">
+                </div>
                 <div class="selected-product-info">
                     <span class="selected-product-name" id="reserve-product-name">Pomada Modeladora</span>
                     <span class="selected-product-price" id="reserve-product-price">R$ 45,00</span>
@@ -280,14 +282,14 @@
                             </div>
                             <div class="form-row">
                                 <div class="form-group">
-                                    <label class="form-label" for="settings-banner-file">Foto do Banner (Upload)</label>
-                                    <input type="file" id="settings-banner-file" class="form-control" accept="image/png, image/jpeg, image/jpg, image/webp, image/gif, image/*, .png, .jpg, .jpeg, .webp, .gif">
-                                    <input type="text" id="settings-banner-url" class="form-control" style="margin-top: 5px; font-size: 0.8rem; height: 32px;" placeholder="Ou link da imagem (URL)">
+                                    <label class="form-label" for="settings-banner-file">Foto/Vídeo do Banner (Upload)</label>
+                                    <input type="file" id="settings-banner-file" class="form-control" accept="image/*, video/*, .gif, .mp4, .mov, .webm">
+                                    <input type="text" id="settings-banner-url" class="form-control" style="margin-top: 5px; font-size: 0.8rem; height: 32px;" placeholder="Ou link da imagem/vídeo (URL)">
                                 </div>
                                 <div class="form-group">
-                                    <label class="form-label" for="settings-feature-file">Foto de Destaque (Upload)</label>
-                                    <input type="file" id="settings-feature-file" class="form-control" accept="image/png, image/jpeg, image/jpg, image/webp, image/gif, image/*, .png, .jpg, .jpeg, .webp, .gif">
-                                    <input type="text" id="settings-feature-url" class="form-control" style="margin-top: 5px; font-size: 0.8rem; height: 32px;" placeholder="Ou link da imagem (URL)">
+                                    <label class="form-label" for="settings-feature-file">Foto/Vídeo de Destaque (Upload)</label>
+                                    <input type="file" id="settings-feature-file" class="form-control" accept="image/*, video/*, .gif, .mp4, .mov, .webm">
+                                    <input type="text" id="settings-feature-url" class="form-control" style="margin-top: 5px; font-size: 0.8rem; height: 32px;" placeholder="Ou link da imagem/vídeo (URL)">
                                 </div>
                             </div>
                         </div>
@@ -504,8 +506,8 @@
 
                 <div class="form-row">
                     <div class="form-group">
-                        <label class="form-label" for="catalog-item-image-file">Enviar Foto (Anexar Arquivo)</label>
-                        <input type="file" id="catalog-item-image-file" class="form-control" accept="image/png, image/jpeg, image/jpg, image/webp, image/gif, image/*, .png, .jpg, .jpeg, .webp, .gif">
+                        <label class="form-label" for="catalog-item-image-file">Enviar Foto/Vídeo (Anexar Arquivo)</label>
+                        <input type="file" id="catalog-item-image-file" class="form-control" accept="image/*, video/*, .gif, .mp4, .mov, .webm">
                     </div>
                     <div class="form-group">
                         <label class="form-label" for="catalog-item-image">Ou link externo (URL)</label>
