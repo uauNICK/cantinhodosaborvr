@@ -303,10 +303,10 @@ class LocalBizApp {
 
         // Top Header
         if (this.logoText) {
-            let icon = "fa-scissors";
-            if (s.theme === "rose-gold") icon = "fa-sparkles";
-            if (s.theme === "emerald-spa") icon = "fa-spa";
-            if (s.theme === "cyberpunk") icon = "fa-bolt-lightning";
+            let icon = "fa-utensils";
+            if (s.theme === "rose-gold") icon = "fa-cake-candles";
+            if (s.theme === "emerald-spa") icon = "fa-carrot";
+            if (s.theme === "cyberpunk") icon = "fa-pizza-slice";
             this.logoText.innerHTML = `<i class="fa-solid ${icon}"></i> <span>${s.storeName}</span>`;
         }
 
@@ -482,8 +482,8 @@ class LocalBizApp {
             card.className = "glass-card catalog-card";
             
             const isService = item.type === "servico";
-            const actionText = isService ? "Agendar Horário" : "Reservar e Retirar";
-            const actionIcon = isService ? "fa-calendar-days" : "fa-bag-shopping";
+            const actionText = isService ? "Entrar em contato" : "Reservar e Retirar";
+            const actionIcon = isService ? "fa-comments" : "fa-bag-shopping";
             const actionClass = isService ? "btn-booking-trigger" : "btn-reserve-trigger";
 
             card.innerHTML = `

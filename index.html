@@ -20,7 +20,7 @@
     <header>
         <div class="navbar">
             <a href="#" class="logo" id="logo-text">
-                <i class="fa-solid fa-scissors"></i> <span>GlowStyle</span>
+                <i class="fa-solid fa-utensils"></i> <span>GlowStyle</span>
             </a>
             <ul class="nav-links">
                 <li><a href="#home" class="active">Início</a></li>
@@ -44,8 +44,8 @@
                 <h1 class="hero-title" id="hero-title">Estilo e Elegância para o seu <span>Visual</span></h1>
                 <p class="hero-description" id="hero-desc">O melhor atendimento da região com profissionais qualificados, produtos premium e um espaço pensado para o seu bem-estar.</p>
                 <div class="hero-actions">
-                    <a href="#catalogo" class="btn-primary"><i class="fa-solid fa-calendar-days"></i> Agendar Horário</a>
-                    <a href="#catalogo" class="btn-secondary"><i class="fa-solid fa-bag-shopping"></i> Ver Produtos</a>
+                    <a href="#catalogo" class="btn-primary"><i class="fa-solid fa-comments"></i> Entrar em Contato</a>
+                    <a href="#catalogo" class="btn-secondary"><i class="fa-solid fa-burger"></i> Ver Cardápio</a>
                 </div>
             </div>
             <div class="hero-image-wrapper">
@@ -59,14 +59,14 @@
         <div class="section-header">
             <span class="section-subtitle">Cardápio de Serviços & Produtos</span>
             <h2 class="section-title">O que temos para você</h2>
-            <p class="section-desc">Escolha um serviço para agendar um horário ou reserve um produto para retirar na nossa loja física.</p>
+            <p class="section-desc">Escolha um item para fazer um pedido, agendar um serviço ou entrar em contato direto pelo WhatsApp.</p>
         </div>
 
         <!-- Filters -->
         <div class="catalog-filters">
             <button class="filter-btn active" data-filter="all">Todos</button>
-            <button class="filter-btn" data-filter="servico">Serviços (Agendar)</button>
-            <button class="filter-btn" data-filter="produto">Produtos (Reservar)</button>
+            <button class="filter-btn" data-filter="servico">Serviços (Contato)</button>
+            <button class="filter-btn" data-filter="produto">Produtos / Cardápio</button>
         </div>
 
         <!-- Catalog Items Grid -->
@@ -125,8 +125,8 @@
         <div class="modal-content glass-card">
             <button class="modal-close" data-close="modal-booking"><i class="fa-solid fa-xmark"></i></button>
             <div class="modal-header">
-                <h3 class="modal-title">Agendar Atendimento</h3>
-                <p class="modal-subtitle" id="booking-item-title">Serviço: Corte de Cabelo</p>
+                <h3 class="modal-title">Entrar em Contato</h3>
+                <p class="modal-subtitle" id="booking-item-title">Serviço: Almoço / Evento</p>
             </div>
             <form id="form-booking">
                 <input type="hidden" id="booking-service-id">
@@ -159,7 +159,7 @@
                     <textarea id="booking-notes" class="form-control" rows="2" placeholder="Alguma preferência ou detalhe específico?"></textarea>
                 </div>
 
-                <button type="submit" class="btn-primary" style="width: 100%; justify-content: center; margin-top: 10px;"><i class="fa-solid fa-calendar-check"></i> Confirmar Agendamento</button>
+                <button type="submit" class="btn-primary" style="width: 100%; justify-content: center; margin-top: 10px;"><i class="fa-brands fa-whatsapp"></i> Enviar por WhatsApp</button>
             </form>
         </div>
     </div>
@@ -364,28 +364,28 @@
                             <h3 style="margin-bottom: 20px; font-size: 1.15rem;"><i class="fa-solid fa-palette" style="color: var(--accent-color); margin-right: 8px;"></i> Tema Visual</h3>
                             <div class="theme-card-selector">
                                 <div class="theme-option" data-theme="barber-dark">
-                                    <strong>Barbearia</strong>
+                                    <strong>Gourmet / Escuro</strong>
                                     <div class="theme-preview-dots">
                                         <div class="theme-dot" style="background-color: #0f111a;"></div>
                                         <div class="theme-dot" style="background-color: #f59e0b;"></div>
                                     </div>
                                 </div>
                                 <div class="theme-option" data-theme="rose-gold">
-                                    <strong>Salão / Rosa</strong>
+                                    <strong>Confeitaria / Café</strong>
                                     <div class="theme-preview-dots">
                                         <div class="theme-dot" style="background-color: #faf8f6;"></div>
                                         <div class="theme-dot" style="background-color: #d4a373;"></div>
                                     </div>
                                 </div>
                                 <div class="theme-option" data-theme="emerald-spa">
-                                    <strong>Spa Verde</strong>
+                                    <strong>Saudável / Orgânico</strong>
                                     <div class="theme-preview-dots">
                                         <div class="theme-dot" style="background-color: #0a120e;"></div>
                                         <div class="theme-dot" style="background-color: #10b981;"></div>
                                     </div>
                                 </div>
                                 <div class="theme-option" data-theme="cyberpunk">
-                                    <strong>Neon Cyber</strong>
+                                    <strong>Neon Pizzaria</strong>
                                     <div class="theme-preview-dots">
                                         <div class="theme-dot" style="background-color: #0c0813;"></div>
                                         <div class="theme-dot" style="background-color: #ec4899;"></div>
