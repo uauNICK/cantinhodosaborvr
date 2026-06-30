@@ -1188,9 +1188,21 @@ class LocalBizApp {
         this.formCatalogItem.reset();
         if (this.catalogItemImageFile) this.catalogItemImageFile.value = "";
 
-        // Populate Category Dropdown select options
         const categorySelect = document.getElementById("catalog-item-category-id");
         const categories = this.db.settings.categories || [];
+
+        // Sync stock field visibility helper
+        const syncStockVisibility = () => {
+            if (!categorySelect) return;
+            const catId = categorySelect.value;
+            const activeCat = categories.find(c => c.id === catId);
+            const isProduct = activeCat && activeCat.type === "produto";
+            const groupStock = document.getElementById("group-item-stock");
+            if (groupStock) {
+                groupStock.style.display = isProduct ? "block" : "none";
+            }
+        };
+
         if (categorySelect) {
             categorySelect.innerHTML = "";
             categories.forEach(cat => {
@@ -1200,16 +1212,6 @@ class LocalBizApp {
                 categorySelect.appendChild(opt);
             });
 
-            // Sync stock field visibility
-            const syncStockVisibility = () => {
-                const catId = categorySelect.value;
-                const activeCat = categories.find(c => c.id === catId);
-                const isProduct = activeCat && activeCat.type === "produto";
-                const groupStock = document.getElementById("group-item-stock");
-                if (groupStock) {
-                    groupStock.style.display = isProduct ? "block" : "none";
-                }
-            };
             categorySelect.removeEventListener("change", categorySelect._syncFn);
             categorySelect._syncFn = syncStockVisibility;
             categorySelect.addEventListener("change", syncStockVisibility);
