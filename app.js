@@ -1073,7 +1073,7 @@ class LocalBizApp {
             if (product.stock !== null && product.stock !== undefined) {
                 if (product.stock === 0) {
                     stockWarningText = `\n\n🚨 *[ALERTA DE ESTOQUE]* O estoque do produto *${product.name}* acaba de *ESGOTAR* (0 unidades restantes)!`;
-                } else if (product.stock < 5) {
+                } else if (product.stock <= 5) {
                     stockWarningText = `\n\n⚠️ *[ALERTA DE ESTOQUE]* O estoque do produto *${product.name}* está baixo (restam apenas *${product.stock}* unidades)!`;
                 }
             }
@@ -1679,7 +1679,7 @@ class LocalBizApp {
             item.type === "produto" && 
             item.stock !== null && 
             item.stock !== undefined && 
-            item.stock < 5
+            item.stock <= 5
         );
         
         if (lowStockItems.length > 0) {
