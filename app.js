@@ -634,7 +634,8 @@ class LocalBizApp {
                     <span style="font-size: 0.75rem; color: var(--accent-color); font-weight:600; text-transform: uppercase;">${typeLabel}</span>
                     <h4 style="margin: 4px 0 8px 0; font-size: 1.05rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${item.name}</h4>
                     <span class="card-price" style="font-size: 1.1rem;">R$ ${this.formatPrice(item.price)}</span>
-                    ${item.stock !== null && item.stock !== undefined ? `<br><span style="font-size: 0.8rem; color: var(--text-secondary);">Estoque: <strong>${item.stock}</strong></span>` : ''}
+                    ${item.stock !== null && item.stock !== undefined ? `<br><span style="font-size: 0.8rem; color: var(--text-secondary);">Disponível: <strong>${item.stock}</strong></span>` : ''}
+                    ${item.reserved ? `<br><span style="font-size: 0.8rem; color: #f59e0b;">Reservado: <strong>${item.reserved}</strong></span>` : ''}
                 </div>
             `;
             grid.appendChild(card);
@@ -700,13 +701,23 @@ class LocalBizApp {
             const waMsg = encodeURIComponent(`Olá ${booking.clientName}! Estou entrando em contato sobre o seu agendamento/reserva ${displayOrderNum}de ${booking.itemName}.`);
             const waLink = `https://wa.me/${booking.phone}?text=${waMsg}`;
 
+            const statusBadge = booking.status === "confirmado"
+                ? `<span class="badge" style="background-color:rgba(16, 185, 129, 0.1); color:#10b981; border: 1px solid rgba(16, 185, 129, 0.2); font-size: 0.7rem; padding: 2px 6px; margin-left: 6px;">Confirmado</span>`
+                : `<span class="badge" style="background-color:rgba(245, 158, 11, 0.1); color:#f59e0b; border: 1px solid rgba(245, 158, 11, 0.2); font-size: 0.7rem; padding: 2px 6px; margin-left: 6px;">Pendente</span>`;
+
+            const showConfirmBtn = booking.type === "produto" && booking.status === "pendente";
+            const confirmBtnHtml = showConfirmBtn
+                ? `<button class="table-action-btn confirm btn-confirm-booking" data-id="${booking.id}" title="Confirmar Pagamento e Venda" style="background-color: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2);"><i class="fa-solid fa-check"></i></button>`
+                : '';
+
             tr.innerHTML = `
-                <td><strong>${displayOrderNum}</strong><strong style="color:var(--accent-color);">${booking.clientName}</strong><br><small style="color:var(--text-secondary);">${booking.notes || 'Sem observações'}</small></td>
+                <td><strong>${displayOrderNum}</strong><strong style="color:var(--accent-color);">${booking.clientName}</strong>${statusBadge}<br><small style="color:var(--text-secondary);">${booking.notes || 'Sem observações'}</small></td>
                 <td>${this.formatPhoneDisplay(booking.phone)}</td>
                 <td>${typeLabel}</td>
                 <td>${booking.itemName}</td>
                 <td>${detailText}</td>
                 <td>
+                    ${confirmBtnHtml}
                     <a href="${waLink}" target="_blank" class="table-action-btn whatsapp" title="Falar no WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
                     <button class="table-action-btn delete btn-delete-booking" data-id="${booking.id}" title="Excluir Registro"><i class="fa-solid fa-trash"></i></button>
                 </td>
@@ -716,6 +727,10 @@ class LocalBizApp {
 
         rows.querySelectorAll(".btn-delete-booking").forEach(btn => {
             btn.addEventListener("click", (e) => this.deleteBooking(e.currentTarget.dataset.id));
+        });
+
+        rows.querySelectorAll(".btn-confirm-booking").forEach(btn => {
+            btn.addEventListener("click", (e) => this.confirmBooking(e.currentTarget.dataset.id));
         });
     }
 
@@ -969,6 +984,7 @@ class LocalBizApp {
             itemName: service.name,
             dateVal: dateVal,
             timeVal: timeVal,
+            status: "confirmado",
             notes: notesVal
         };
 
@@ -1067,21 +1083,25 @@ class LocalBizApp {
         const newReservation = {
             id: newId,
             orderNum: orderNum,
+            productId: productId,
+            qty: qtyVal,
             clientName: nameVal,
             phone: phoneVal,
             type: "produto",
             itemName: `${product.name} (${qtyVal}x)`,
             dateVal: new Date().toISOString().split("T")[0],
             timeVal: "Reserva de Produto",
+            status: "pendente",
             notes: `Retirada agendada. Total: R$ ${this.formatPrice(totalCost)}`
         };
 
         try {
             if (product.stock !== null && product.stock !== undefined) {
                 product.stock -= qtyVal;
+                product.reserved = (product.reserved || 0) + qtyVal;
                 if (isFirebaseConfigured) {
                     try {
-                        await db.collection("catalog").doc(productId).set({ stock: product.stock }, { merge: true });
+                        await db.collection("catalog").doc(productId).set({ stock: product.stock, reserved: product.reserved }, { merge: true });
                     } catch (fsErr) {
                         console.warn("Falha ao atualizar estoque no Firebase (continuando localmente):", fsErr);
                     }
@@ -1418,17 +1438,99 @@ class LocalBizApp {
     async deleteBooking(bookingId) {
         if (confirm("Confirmar a exclusão deste agendamento/reserva?")) {
             try {
+                const booking = this.db.bookings.find(b => b.id === bookingId);
+                if (booking && booking.type === "produto" && booking.status === "pendente") {
+                    let product = this.db.catalog.find(p => p.id === booking.productId);
+                    if (!product && booking.itemName) {
+                        product = this.db.catalog.find(p => booking.itemName.startsWith(p.name));
+                    }
+                    let qty = booking.qty;
+                    if (!qty && booking.itemName) {
+                        const match = booking.itemName.match(/\((\d+)x\)/);
+                        qty = match ? parseInt(match[1]) : 1;
+                    }
+
+                    if (product && product.stock !== null && product.stock !== undefined) {
+                        product.stock += qty;
+                        product.reserved = Math.max(0, (product.reserved || 0) - qty);
+                        
+                        if (isFirebaseConfigured) {
+                            try {
+                                await db.collection("catalog").doc(product.id).set({ stock: product.stock, reserved: product.reserved }, { merge: true });
+                            } catch (fsErr) {
+                                console.warn("Failed to sync stock restoration on deletion to Firestore:", fsErr);
+                            }
+                        }
+                    }
+                }
+
                 if (isFirebaseConfigured) {
                     await db.collection("bookings").doc(bookingId).delete();
                 }
                 this.db.bookings = this.db.bookings.filter(b => b.id !== bookingId);
                 this.saveDatabase();
+                
+                this.renderCatalog();
+                this.renderAdminCatalog();
                 this.renderAdminBookings();
-                this.showToast("Registro excluído.", "error");
+                this.renderStockAlerts();
+                this.showToast("Registro excluído com estorno de estoque.", "error");
             } catch (err) {
                 console.error("Failed to delete booking", err);
                 this.showToast("Erro ao excluir o registro.", "error");
             }
+        }
+    }
+
+    async confirmBooking(bookingId) {
+        try {
+            const booking = this.db.bookings.find(b => b.id === bookingId);
+            if (!booking) return;
+
+            if (booking.type === "produto") {
+                let product = this.db.catalog.find(p => p.id === booking.productId);
+                if (!product && booking.itemName) {
+                    product = this.db.catalog.find(p => booking.itemName.startsWith(p.name));
+                }
+                let qty = booking.qty;
+                if (!qty && booking.itemName) {
+                    const match = booking.itemName.match(/\((\d+)x\)/);
+                    qty = match ? parseInt(match[1]) : 1;
+                }
+
+                if (product && product.stock !== null && product.stock !== undefined) {
+                    product.reserved = Math.max(0, (product.reserved || 0) - qty);
+                    
+                    if (isFirebaseConfigured) {
+                        try {
+                            await db.collection("catalog").doc(product.id).set({ reserved: product.reserved }, { merge: true });
+                        } catch (fsErr) {
+                            console.warn("Failed to sync stock reservation settlement to Firestore:", fsErr);
+                        }
+                    }
+                }
+            }
+
+            booking.status = "confirmado";
+            
+            if (isFirebaseConfigured) {
+                try {
+                    const { id, ...data } = booking;
+                    await db.collection("bookings").doc(bookingId).set(data);
+                } catch (fsErr) {
+                    console.warn("Failed to sync booking status confirmation to Firestore:", fsErr);
+                }
+            }
+
+            this.saveDatabase();
+            this.renderCatalog();
+            this.renderAdminCatalog();
+            this.renderAdminBookings();
+            this.renderStockAlerts();
+            this.showToast("Reserva confirmada e estoque finalizado com sucesso!");
+        } catch (err) {
+            console.error("Failed to confirm booking", err);
+            this.showToast("Erro ao confirmar a reserva.", "error");
         }
     }
 
