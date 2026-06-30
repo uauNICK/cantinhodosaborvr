@@ -655,8 +655,20 @@ class LocalBizApp {
         if (!rows) return;
         rows.innerHTML = "";
 
-        const list = this.db.bookings || [];
+        const searchInput = document.getElementById("admin-bookings-search");
+        const query = searchInput ? searchInput.value.trim().toLowerCase() : "";
+
+        let list = this.db.bookings || [];
         
+        if (query) {
+            list = list.filter(b => 
+                (b.clientName && b.clientName.toLowerCase().includes(query)) ||
+                (b.phone && b.phone.includes(query)) ||
+                (b.orderNum && String(b.orderNum).includes(query)) ||
+                (b.itemName && b.itemName.toLowerCase().includes(query))
+            );
+        }
+
         // Sort bookings by date descending
         list.sort((a, b) => new Date(b.dateVal) - new Date(a.dateVal));
 
@@ -684,11 +696,12 @@ class LocalBizApp {
                 : `Reserva em ${this.formatDateBR(booking.dateVal)}`;
 
             // Create WhatsApp contact link
-            const waMsg = encodeURIComponent(`Olá ${booking.clientName}! Estou entrando em contato sobre o seu agendamento de ${booking.itemName}.`);
+            const displayOrderNum = booking.orderNum ? `#${booking.orderNum} ` : '';
+            const waMsg = encodeURIComponent(`Olá ${booking.clientName}! Estou entrando em contato sobre o seu agendamento/reserva ${displayOrderNum}de ${booking.itemName}.`);
             const waLink = `https://wa.me/${booking.phone}?text=${waMsg}`;
 
             tr.innerHTML = `
-                <td><strong>${booking.clientName}</strong><br><small style="color:var(--text-secondary);">${booking.notes || 'Sem observações'}</small></td>
+                <td><strong>${displayOrderNum}</strong><strong style="color:var(--accent-color);">${booking.clientName}</strong><br><small style="color:var(--text-secondary);">${booking.notes || 'Sem observações'}</small></td>
                 <td>${this.formatPhoneDisplay(booking.phone)}</td>
                 <td>${typeLabel}</td>
                 <td>${booking.itemName}</td>
@@ -863,6 +876,12 @@ class LocalBizApp {
                 this.closeModal("modal-out-of-stock");
             });
         }
+
+        // Search bookings filter
+        const bookingsSearch = document.getElementById("admin-bookings-search");
+        if (bookingsSearch) {
+            bookingsSearch.addEventListener("input", () => this.renderAdminBookings());
+        }
     }
 
     // Modal Control Utils
@@ -937,10 +956,13 @@ class LocalBizApp {
             return;
         }
 
+        const orderNum = Math.floor(10000 + Math.random() * 90000);
+
         // Save to Database
         const newId = "b_" + Date.now();
         const newBooking = {
             id: newId,
+            orderNum: orderNum,
             clientName: nameVal,
             phone: phoneVal,
             type: "servico",
@@ -969,6 +991,7 @@ class LocalBizApp {
             // Redirect to WhatsApp Link
             const formattedDate = this.formatDateBR(dateVal);
             const message = `Olá! Gostaria de confirmar meu agendamento:\n\n` +
+                            `🆔 *Pedido:* #${orderNum}\n` +
                             `🔹 *Serviço:* ${service.name}\n` +
                             `📅 *Data:* ${formattedDate}\n` +
                             `⏰ *Horário:* ${timeVal}\n` +
@@ -1037,11 +1060,13 @@ class LocalBizApp {
         }
 
         const totalCost = product.price * qtyVal;
+        const orderNum = Math.floor(10000 + Math.random() * 90000);
 
         // Save to Database
         const newId = "r_" + Date.now();
         const newReservation = {
             id: newId,
+            orderNum: orderNum,
             clientName: nameVal,
             phone: phoneVal,
             type: "produto",
@@ -1091,6 +1116,7 @@ class LocalBizApp {
             }
 
             const message = `Olá! Gostaria de reservar o produto no catálogo:\n\n` +
+                            `🆔 *Pedido:* #${orderNum}\n` +
                             `🎁 *Produto:* ${product.name}\n` +
                             `🔢 *Quantidade:* ${qtyVal} unidade(s)\n` +
                             `💰 *Total:* R$ ${this.formatPrice(totalCost)}\n` +

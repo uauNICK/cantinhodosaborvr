@@ -446,9 +446,12 @@
 
             <!-- TAB 3: RESERVATIONS & BOOKINGS -->
             <div class="admin-tab-pane" id="tab-bookings">
-                <div class="admin-panel-header">
+                <div class="admin-panel-header" style="flex-wrap: wrap; gap: 15px;">
                     <h2 class="admin-panel-title">Registro de Agendamentos e Reservas</h2>
-                    <span class="badge" id="bookings-count">0 Registros</span>
+                    <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                        <input type="text" id="admin-bookings-search" class="form-control" style="width: 240px; height: 36px; font-size: 0.85rem;" placeholder="🔍 Buscar nome, fone ou #pedido">
+                        <span class="badge" id="bookings-count">0 Registros</span>
+                    </div>
                 </div>
 
                 <div class="admin-table-wrapper">
